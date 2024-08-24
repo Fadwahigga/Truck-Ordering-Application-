@@ -21,7 +21,7 @@ class OrderStatusUpdate extends Notification
 
     public function via($notifiable)
     {
-        return ['mail', 'database'. 'broadcast'];
+        return ['mail', 'database', 'broadcast'];
     }
 
     public function toMail($notifiable)
