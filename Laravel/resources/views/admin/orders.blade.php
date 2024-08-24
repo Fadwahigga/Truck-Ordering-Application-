@@ -145,11 +145,11 @@ select {
             <th>Delivery Location</th>
             <th>Status</th>
             <th>Action</th>
-            <th>Send Email</th> 
+            <th>Send Email</th>
         </tr>
     </thead>
     <tbody>
-        @foreach($orders as $order)
+        @foreach($orders->sortByDesc('created_at') as $order)
         <tr class="order-row" data-order-id="{{ $order->id }}">
             <td>{{ $order->id }}</td>
             <td>{{ $order->user->name }}</td>
