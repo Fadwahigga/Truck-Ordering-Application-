@@ -1,66 +1,120 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Truck Ordering Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This application allows users to submit truck shipping requests and provides an admin interface for managing orders.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **User Authentication:**
+  - Secure user registration and login using Laravel Sanctum.
+- **RESTful API:**
+  - Provides data exchange between the backend and frontend.
+- **Truck Request Form:**
+  - Users can submit details like pickup location, delivery destination, cargo size, and weight.
+- **User Dashboard:**
+  - A personalized dashboard where users can monitor the status of their truck shipping requests in real-time.
+- **Admin Interface:**
+  - A comprehensive admin panel for viewing, updating, and managing all submitted orders.
+- **Order Status Updates:**
+  - Admins can update the status of each order, such as pending, in progress, or delivered.
+- **Email Notifications:**
+  - Automatic email notifications sent to admins when a new order is submitted.
+- **Communication with Users:**
+  - Admins can communicate with users via email directly from the admin interface.
+- **Responsive Design:**
+  - The application is optimized for mobile and desktop views.
+- **Scalable Architecture:**
+  - Built with scalability in mind to handle a growing number of users and orders.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. **Clone the Repository:**
+   - Clone this repository to your local machine:
+     ```bash
+     git clone https://github.com/Fadwahigga/Truck-Ordering-Application-.git
+     ```
+   
+2. **Backend Setup (Laravel):**
+   - Navigate to the backend directory:
+     ```bash
+     cd Laravel
+     ```
+   - Install the necessary dependencies:
+     ```bash
+     composer install
+     ```
+   - Set up your environment configuration:
+     - Copy the `.env.example` file to `.env`:
+       ```bash
+       cp .env.example .env
+       ```
+     - Configure your database settings in the `.env` file.
+   
+3. **Database Setup:**
+   - Run the database migrations to set up the required tables:
+     ```bash
+     php artisan migrate
+     ```
+   - Optionally, seed the database with initial data:
+     ```bash
+     php artisan db:seed
+     ```
 
-## Learning Laravel
+4. **API and Authentication Configuration:**
+   - Generate an application key:
+     ```bash
+     php artisan key:generate
+     ```
+   - If using Laravel Sanctum, publish the Sanctum configuration:
+     ```bash
+     php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+     ```
+   - Run Sanctum migrations:
+     ```bash
+     php artisan migrate
+     ```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+5. **Run the Development Server:**
+   - Start the Laravel development server:
+     ```bash
+     php artisan serve
+     ```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Frontend Setup (Flutter)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **Install Flutter:**
+   - Ensure Flutter SDK is installed on your machine. Follow the instructions at the [Flutter website](https://flutter.dev/docs/get-started/install).
 
-## Laravel Sponsors
+2. **Navigate to the Frontend Directory:**
+   - Go to the frontend directory:
+     ```bash
+     cd Flutter App
+     ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+3. **Install Dependencies:**
+   - Get all the required packages:
+     ```bash
+     flutter pub get
+     ```
 
-### Premium Partners
+4. **Run the Flutter App:**
+   - Launch the application on an emulator or physical device:
+     ```bash
+     flutter run
+     ```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Usage
 
-## Contributing
+1. **User Registration and Login:**
+   - Register a new user account or log in with existing credentials.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2. **Submit a Truck Request:**
+   - Fill out the truck request form with shipping details, including pickup and delivery locations, cargo specifications, and preferred times.
 
-## Code of Conduct
+3. **Monitor Order Status:**
+   - Users can track the progress of their orders via the dashboard.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. **Admin Notifications:**
+   - Admins receive email notifications whenever a new order is placed.
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+5. **Manage Orders:**
+   - Admins can view all orders in the admin interface, update the order status, and communicate with users regarding their shipments.
