@@ -199,6 +199,33 @@ document.addEventListener("DOMContentLoaded", function () {
     const notificationDropdown = document.getElementById('notificationDropdown');
     let unreadNotifications = document.querySelectorAll('.notification-dropdown option.new-notification');
     notificationBadge.textContent = unreadNotifications.length;
+        function checkNewNotifications() {
+        fetch('/admin/notifications')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(notification => {
+                    if (!document.querySelector(`.notification-dropdown option[value="${notification.data.order_id}"]`)) {
+                        addNewNotification(notification.data);
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching notifications:', error));
+    }
+    setInterval(checkNewNotifications, 3000);
+
+    function addNewNotification(data) {
+        const option = document.createElement('option');
+        option.value = data.order_id;
+        option.textContent = `New Order with ID #${data.order_id}`;
+        option.classList.add('new-notification', 'most-recent');
+        const previousFirstOption = notificationDropdown.querySelector('option.most-recent');
+        if (previousFirstOption) {
+            previousFirstOption.classList.remove('most-recent');
+        }
+        notificationDropdown.insertBefore(option, notificationDropdown.firstChild);
+        notificationBadge.textContent = parseInt(notificationBadge.textContent) + 1;
+        addNewOrderRow(data);
+    }
     notificationDropdown.addEventListener('change', function() {
         var selectedOrderId = this.value;
         var rows = document.querySelectorAll('.order-row');
@@ -225,15 +252,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
-    const pusher = new Pusher('{{ env('PUSHER_APP_KEY') }}', {
-        cluster: '{{ env('PUSHER_APP_CLUSTER') }}',
-        encrypted: true
-    });
-    const channel = pusher.subscribe('private-App.Models.User.{{ Auth::id() }}');
 
-    channel.bind('Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', function(data) {
-        addNewNotification(data);
-    });
     function addNewNotification(data) {
         const option = document.createElement('option');
         option.value = data.order_id;
