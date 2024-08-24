@@ -191,23 +191,27 @@ select {
         </form>
     </div>
 </div>
-
-<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const notificationBadge = document.getElementById('notificationBadge');
     const notificationDropdown = document.getElementById('notificationDropdown');
     let unreadNotifications = document.querySelectorAll('.notification-dropdown option.new-notification');
     notificationBadge.textContent = unreadNotifications.length;
-        function checkNewNotifications() {
+
+    function checkNewNotifications() {
         fetch('/admin/notifications')
             .then(response => response.json())
             .then(data => {
+                let newNotificationDetected = false;
                 data.forEach(notification => {
                     if (!document.querySelector(`.notification-dropdown option[value="${notification.data.order_id}"]`)) {
                         addNewNotification(notification.data);
+                        newNotificationDetected = true;
                     }
                 });
+                if (newNotificationDetected) {
+                    updateOrdersTable();
+                }
             })
             .catch(error => console.error('Error fetching notifications:', error));
     }
@@ -218,14 +222,30 @@ document.addEventListener("DOMContentLoaded", function () {
         option.value = data.order_id;
         option.textContent = `New Order with ID #${data.order_id}`;
         option.classList.add('new-notification', 'most-recent');
+
         const previousFirstOption = notificationDropdown.querySelector('option.most-recent');
         if (previousFirstOption) {
             previousFirstOption.classList.remove('most-recent');
         }
+
         notificationDropdown.insertBefore(option, notificationDropdown.firstChild);
         notificationBadge.textContent = parseInt(notificationBadge.textContent) + 1;
-        addNewOrderRow(data);
     }
+
+    function updateOrdersTable() {
+        fetch('/admin/orders')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTableBody = doc.querySelector('#ordersTable tbody');
+                const currentTableBody = document.querySelector('#ordersTable tbody');
+                currentTableBody.innerHTML = newTableBody.innerHTML;
+                attachEmailButtonListeners();
+            })
+            .catch(error => console.error('Error fetching orders:', error));
+    }
+
     notificationDropdown.addEventListener('change', function() {
         var selectedOrderId = this.value;
         var rows = document.querySelectorAll('.order-row');
@@ -253,24 +273,47 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    function addNewNotification(data) {
-        const option = document.createElement('option');
-        option.value = data.order_id;
-        option.textContent = `New Order with ID #${data.order_id}`;
-        option.classList.add('new-notification', 'most-recent');
-        const previousFirstOption = notificationDropdown.querySelector('option.most-recent');
-        if (previousFirstOption) {
-            previousFirstOption.classList.remove('most-recent');
-        }
-        notificationDropdown.insertBefore(option, notificationDropdown.firstChild);
-        notificationBadge.textContent = parseInt(notificationBadge.textContent) + 1;
-        addNewOrderRow(data);
-    }
+    function attachEmailButtonListeners() {
+        const emailModal = document.getElementById('emailModal');
+        const closeButton = emailModal.querySelector('.close-button');
+        const emailButtons = document.querySelectorAll('.email-button');
+        const emailForm = document.getElementById('emailForm');
 
-    const emailModal = document.getElementById('emailModal');
-    const closeButton = emailModal.querySelector('.close-button');
-    const emailButtons = document.querySelectorAll('.email-button');
-    const emailForm = document.getElementById('emailForm');
+        emailButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                const userEmail = this.getAttribute('data-user-email');
+                openEmailModal(userId, userEmail);
+            });
+        });
+
+        closeButton.addEventListener('click', closeEmailModal);
+
+        emailForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const userId = document.getElementById('userId').value;
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+
+            fetch('/admin/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ user_id: userId, email: email, subject: subject, message: message })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Email sent successfully');
+                    closeEmailModal();
+                } else {
+                    alert('Failed to send email');
+                }
+            });
+        });
+    }
 
     function openEmailModal(userId, userEmail) {
         document.getElementById('userId').value = userId;
@@ -283,82 +326,15 @@ document.addEventListener("DOMContentLoaded", function () {
         emailForm.reset();
     }
 
-    emailButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.getAttribute('data-user-id');
-            const userEmail = this.getAttribute('data-user-email');
-            openEmailModal(userId, userEmail);
-        });
-    });
-
-    closeButton.addEventListener('click', closeEmailModal);
-
-    emailForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const userId = document.getElementById('userId').value;
-        const email = document.getElementById('email').value;
-        const subject = document.getElementById('subject').value;
-        const message = document.getElementById('message').value;
-
-        fetch('/admin/send-email', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ user_id: userId, email: email, subject: subject, message: message })
-        }).then(response => {
-            if (response.ok) {
-                alert('Email sent successfully');
-                closeEmailModal();
-            } else {
-                alert('Failed to send email');
-            }
-        });
-    });
     window.addEventListener('click', function(event) {
         if (event.target === emailModal) {
             closeEmailModal();
         }
     });
-    function addNewOrderRow(data) {
-        const ordersTable = document.getElementById('ordersTable');
-        const newRow = document.createElement('tr');
-        newRow.classList.add('order-row');
-        newRow.setAttribute('data-order-id', data.order_id);
 
-        newRow.innerHTML = `
-            <td>${data.order_id}</td>
-            <td>${data.user_name}</td>
-            <td>${data.pickup_location}</td>
-            <td>${data.delivery_location}</td>
-            <td>pending</td>
-            <td>
-                <form action="/admin/orders/${data.order_id}" method="POST">
-                    @csrf
-                    @method('PATCH')
-                    <select name="status">
-                        <option value="pending" selected>Pending</option>
-                        <option value="in progress">In Progress</option>
-                        <option value="delivered">Delivered</option>
-                    </select>
-                    <button type="submit">Update</button>
-                </form>
-            </td>
-            <td>
-                <button type="button" class="email-button" data-user-id="${data.user_id}" data-user-email="${data.user_email}">Send Email</button>
-            </td>
-        `;
-        ordersTable.querySelector('tbody').insertBefore(newRow, ordersTable.querySelector('tbody').firstChild);
-        const newEmailButton = newRow.querySelector('.email-button');
-        newEmailButton.addEventListener('click', function() {
-            const userId = this.getAttribute('data-user-id');
-            const userEmail = this.getAttribute('data-user-email');
-            openEmailModal(userId, userEmail);
-        });
-    }
+    attachEmailButtonListeners();
 });
 </script>
+
 </body>
 </html>

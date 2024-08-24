@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,6 +19,7 @@ class _TruckRequestScreenState extends State<TruckRequestScreen> {
   final TextEditingController _weightController = TextEditingController();
   DateTime? _pickupTime;
   DateTime? _deliveryTime;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,163 +28,183 @@ class _TruckRequestScreenState extends State<TruckRequestScreen> {
         title: const Text('Request a Truck'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              TextField(
-                controller: _pickupLocationController,
-                decoration: const InputDecoration(
-                  label: Row(
-                    children: [
-                      Text('Pickup Location'),
-                      Text(
-                        ' *',
-                        style: TextStyle(color: Colors.red),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _pickupLocationController,
+                    decoration: const InputDecoration(
+                      label: Row(
+                        children: [
+                          Text('Pickup Location'),
+                          Text(
+                            ' *',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              TextField(
-                controller: _deliveryLocationController,
-                decoration: const InputDecoration(
-                  label: Row(
-                    children: [
-                      Text('Delivery Location'),
-                      Text(
-                        ' *',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              TextField(
-                controller: _sizeController,
-                decoration: const InputDecoration(
-                  label: Row(
-                    children: [
-                      Text('Size'),
-                      Text(
-                        ' *',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              TextField(
-                controller: _weightController,
-                decoration: const InputDecoration(
-                  label: Row(
-                    children: [
-                      Text('Weight'),
-                      Text(
-                        ' *',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        final DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2101),
-                        );
-                        if (picked != null)
-                          setState(() => _pickupTime = picked);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15.0, horizontal: 15.0),
-                        textStyle: const TextStyle(fontSize: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text('Select Pickup Time'),
                     ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2101),
-                        );
-                        if (picked != null)
-                          setState(() => _deliveryTime = picked);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15.0, horizontal: 15.0),
-                        textStyle: const TextStyle(fontSize: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                  ),
+                  TextField(
+                    controller: _deliveryLocationController,
+                    decoration: const InputDecoration(
+                      label: Row(
+                        children: [
+                          Text('Delivery Location'),
+                          Text(
+                            ' *',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
                       ),
-                      child: const Text('Select Delivery Time'),
                     ),
-                  ],
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_pickupTime == null || _deliveryTime == null) {
-                    _showErrorDialog(
-                        context, 'Please set both Pickup and Delivery times.');
-                    return;
-                  }
-                  final orderService =
-                      Provider.of<OrderService>(context, listen: false);
-                  orderService
-                      .createOrder(
-                    pickupLocation: _pickupLocationController.text,
-                    deliveryLocation: _deliveryLocationController.text,
-                    size: _sizeController.text,
-                    weight: _weightController.text,
-                    pickupTime: _pickupTime!,
-                    deliveryTime: _deliveryTime!,
+                  ),
+                  TextField(
+                    controller: _sizeController,
+                    decoration: const InputDecoration(
+                      label: Row(
+                        children: [
+                          Text('Size'),
+                          Text(
+                            ' *',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: _weightController,
+                    decoration: const InputDecoration(
+                      label: Row(
+                        children: [
+                          Text('Weight'),
+                          Text(
+                            ' *',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+                            );
+                            if (picked != null)
+                              setState(() => _pickupTime = picked);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.blue,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15.0, horizontal: 15.0),
+                            textStyle: const TextStyle(fontSize: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text('Select Pickup Time'),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+                            );
+                            if (picked != null)
+                              setState(() => _deliveryTime = picked);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.blue,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15.0, horizontal: 15.0),
+                            textStyle: const TextStyle(fontSize: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text('Select Delivery Time'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _submitRequest,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15.0, horizontal: 20.0),
+                      textStyle: const TextStyle(fontSize: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Submit Request'),
                   )
-                      .then((_) {
-                    _showSuccessDialog(context);
-                  }).catchError((error) {
-                    _showErrorDialog(context, error.toString());
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 15.0, horizontal: 20.0),
-                  textStyle: const TextStyle(fontSize: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text('Submit Request'),
-              )
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
       ),
     );
+  }
+
+  void _submitRequest() async {
+    if (_pickupTime == null || _deliveryTime == null) {
+      _showErrorDialog(context, 'Please set both Pickup and Delivery times.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final orderService = Provider.of<OrderService>(context, listen: false);
+
+    try {
+      await orderService.createOrder(
+        pickupLocation: _pickupLocationController.text,
+        deliveryLocation: _deliveryLocationController.text,
+        size: _sizeController.text,
+        weight: _weightController.text,
+        pickupTime: _pickupTime!,
+        deliveryTime: _deliveryTime!,
+      );
+      _showSuccessDialog(context);
+    } catch (error) {
+      _showErrorDialog(context, error.toString());
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _showSuccessDialog(BuildContext context) {
