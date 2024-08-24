@@ -87,7 +87,7 @@ This application allows users to submit truck shipping requests and provides an 
 2. **Navigate to the Frontend Directory:**
    - Go to the frontend directory:
      ```bash
-     cd Flutter App
+     cd Flutter
      ```
 
 3. **Install Dependencies:**
