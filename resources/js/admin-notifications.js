@@ -1,4 +1,3 @@
-// public/js/admin-notifications.js
 
 document.addEventListener("DOMContentLoaded", function () {
     const pusher = new Pusher("413aa121bafc5c57ced0", {
@@ -11,9 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
     channel.bind(
         "Illuminate\\Notifications\\Events\\BroadcastNotificationCreated",
         function (data) {
-            // Update the UI to show the new notification
-            updateNotificationUI(data);
-            // Fetch all unread notifications
             fetchUnreadNotifications();
         }
     );
@@ -29,7 +25,6 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch("/admin/notifications")
             .then((response) => response.json())
             .then((notifications) => {
-                // Update the notification count
                 updateNotificationCount(notifications.length);
             });
     }
