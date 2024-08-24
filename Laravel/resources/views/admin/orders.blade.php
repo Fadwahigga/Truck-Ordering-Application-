@@ -85,6 +85,42 @@ select {
 .hidden {
     display: none;
 }
+#emailModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 400px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.close-button {
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
+#emailForm {
+    display: flex;
+    flex-direction: column;
+}
+#emailForm input,
+#emailForm textarea {
+    margin-bottom: 10px;
+    padding: 5px;
+}
+#emailForm button {
+    align-self: flex-start;
+}
 </style>
 </head>
 <body>
@@ -109,6 +145,7 @@ select {
             <th>Delivery Location</th>
             <th>Status</th>
             <th>Action</th>
+            <th>Send Email</th> 
         </tr>
     </thead>
     <tbody>
@@ -131,10 +168,30 @@ select {
                     <button type="submit">Update</button>
                 </form>
             </td>
+            <td>
+                <button type="button" class="email-button" data-user-id="{{ $order->user_id }}" data-user-email="{{ $order->user->email }}">Send Email</button>
+            </td>
         </tr>
         @endforeach
     </tbody>
 </table>
+<div id="emailModal" class="hidden">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Send Email to User</h2>
+        <form id="emailForm">
+            <input type="hidden" id="userId" name="user_id">
+            <label for="email">To:</label>
+            <input type="email" id="email" name="email" readonly>
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" required>
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" rows="5" required></textarea>
+            <button type="submit">Send Email</button>
+        </form>
+    </div>
+</div>
+
 <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -190,6 +247,62 @@ document.addEventListener("DOMContentLoaded", function () {
         notificationBadge.textContent = parseInt(notificationBadge.textContent) + 1;
         addNewOrderRow(data);
     }
+
+    const emailModal = document.getElementById('emailModal');
+    const closeButton = emailModal.querySelector('.close-button');
+    const emailButtons = document.querySelectorAll('.email-button');
+    const emailForm = document.getElementById('emailForm');
+
+    function openEmailModal(userId, userEmail) {
+        document.getElementById('userId').value = userId;
+        document.getElementById('email').value = userEmail;
+        emailModal.style.display = 'flex';
+    }
+
+    function closeEmailModal() {
+        emailModal.style.display = 'none';
+        emailForm.reset();
+    }
+
+    emailButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const userEmail = this.getAttribute('data-user-email');
+            openEmailModal(userId, userEmail);
+        });
+    });
+
+    closeButton.addEventListener('click', closeEmailModal);
+
+    emailForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const userId = document.getElementById('userId').value;
+        const email = document.getElementById('email').value;
+        const subject = document.getElementById('subject').value;
+        const message = document.getElementById('message').value;
+
+        fetch('/admin/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ user_id: userId, email: email, subject: subject, message: message })
+        }).then(response => {
+            if (response.ok) {
+                alert('Email sent successfully');
+                closeEmailModal();
+            } else {
+                alert('Failed to send email');
+            }
+        });
+    });
+    window.addEventListener('click', function(event) {
+        if (event.target === emailModal) {
+            closeEmailModal();
+        }
+    });
     function addNewOrderRow(data) {
         const ordersTable = document.getElementById('ordersTable');
         const newRow = document.createElement('tr');
@@ -214,9 +327,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     <button type="submit">Update</button>
                 </form>
             </td>
+            <td>
+                <button type="button" class="email-button" data-user-id="${data.user_id}" data-user-email="${data.user_email}">Send Email</button>
+            </td>
         `;
-
         ordersTable.querySelector('tbody').insertBefore(newRow, ordersTable.querySelector('tbody').firstChild);
+        const newEmailButton = newRow.querySelector('.email-button');
+        newEmailButton.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const userEmail = this.getAttribute('data-user-email');
+            openEmailModal(userId, userEmail);
+        });
     }
 });
 </script>
