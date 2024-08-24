@@ -92,53 +92,59 @@ class _TruckRequestScreenState extends State<TruckRequestScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2101),
-                    );
-                    if (picked != null) setState(() => _pickupTime = picked);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15.0, horizontal: 20.0),
-                    textStyle: const TextStyle(fontSize: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                        );
+                        if (picked != null)
+                          setState(() => _pickupTime = picked);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15.0, horizontal: 15.0),
+                        textStyle: const TextStyle(fontSize: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text('Select Pickup Time'),
                     ),
-                  ),
-                  child: const Text('Select Pickup Time'),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                        );
+                        if (picked != null)
+                          setState(() => _deliveryTime = picked);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15.0, horizontal: 15.0),
+                        textStyle: const TextStyle(fontSize: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text('Select Delivery Time'),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () async {
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                  );
-                  if (picked != null) setState(() => _deliveryTime = picked);
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 15.0, horizontal: 20.0),
-                  textStyle: const TextStyle(fontSize: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text('Select Delivery Time'),
-              ),
-              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (_pickupTime == null || _deliveryTime == null) {
