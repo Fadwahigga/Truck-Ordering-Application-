@@ -4,7 +4,7 @@
     <title>Order Update</title>
 </head>
 <body>
-    <h1>Hello {{ $user->name }},</h1>
+    <h3>Hello {{ $user->name }},</h3>
     <p>{{ $messageContent }}</p>
 </body>
 </html>
