@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class AuthService extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
-  final String baseUrl = 'http://192.168.10.26:8000/api';
+  final String baseUrl = 'http://truck-ordering.infinityfreeapp.com/api';
 
   Future<bool> login(String email, String password) async {
     final response = await http.post(
