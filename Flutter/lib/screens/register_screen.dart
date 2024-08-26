@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,17 +17,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  void _showErrorDialog(String message) {
+  bool _isLoading = false;
+
+  void _showDialog(String title, String message, Icon icon,
+      {bool isSuccess = false}) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Error'),
+          title: Row(
+            children: [
+              icon,
+              const SizedBox(width: 10),
+              Text(title),
+            ],
+          ),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                if (isSuccess) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/login',
+                    (route) => false,
+                  );
+                }
               },
               child: const Text('OK'),
             ),
@@ -122,40 +135,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
               obscureText: true,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                final name = _nameController.text.trim();
-                final email = _emailController.text.trim();
-                final password = _passwordController.text.trim();
-                final confirmPassword = _confirmPasswordController.text.trim();
-                final authService =
-                    Provider.of<AuthService>(context, listen: false);
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: () async {
+                      final name = _nameController.text.trim();
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+                      final confirmPassword =
+                          _confirmPasswordController.text.trim();
+                      final authService =
+                          Provider.of<AuthService>(context, listen: false);
 
-                if (name.isEmpty ||
-                    email.isEmpty ||
-                    password.isEmpty ||
-                    confirmPassword.isEmpty) {
-                  _showErrorDialog('Please fill in all fields.');
-                  return;
-                }
+                      if (name.isEmpty ||
+                          email.isEmpty ||
+                          password.isEmpty ||
+                          confirmPassword.isEmpty) {
+                        _showDialog(
+                          'Error',
+                          'Please fill in all fields.',
+                          const Icon(Icons.error, color: Colors.red),
+                        );
+                        return;
+                      }
 
-                if (password == confirmPassword) {
-                  final success =
-                      await authService.register(name, email, password);
-                  if (success) {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/login',
-                      (route) => false,
-                    );
-                  } else {
-                    _showErrorDialog('Registration failed');
-                  }
-                } else {
-                  _showErrorDialog('Passwords do not match');
-                }
-              },
-              child: const Text('Register'),
-            ),
+                      if (password != confirmPassword) {
+                        _showDialog(
+                          'Error',
+                          'Passwords do not match.',
+                          const Icon(Icons.error, color: Colors.red),
+                        );
+                        return;
+                      }
+
+                      setState(() {
+                        _isLoading = true;
+                      });
+
+                      final success =
+                          await authService.register(name, email, password);
+
+                      setState(() {
+                        _isLoading = false;
+                      });
+
+                      if (success) {
+                        _showDialog(
+                          'Success',
+                          'Registration successful!',
+                          const Icon(Icons.check_circle, color: Colors.green),
+                          isSuccess: true,
+                        );
+                      } else {
+                        _showDialog(
+                          'Error',
+                          'Registration failed. Please try again.',
+                          const Icon(Icons.error, color: Colors.red),
+                        );
+                      }
+                    },
+                    child: const Text('Register'),
+                  ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: () {

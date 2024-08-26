@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,18 +13,29 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  void _showErrorDialog(String message) {
+  void _showDialog(String title, String message, Icon icon,
+      {bool isSuccess = false}) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Error'),
+          title: Row(
+            children: [
+              icon,
+              const SizedBox(width: 10),
+              Text(title),
+            ],
+          ),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                if (isSuccess) {
+                  Navigator.pushReplacementNamed(context, '/dashboard');
+                }
               },
               child: const Text('OK'),
             ),
@@ -84,28 +93,51 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: true,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                final email = _emailController.text.trim();
-                final password = _passwordController.text.trim();
-                final authService =
-                    Provider.of<AuthService>(context, listen: false);
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: () async {
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+                      final authService =
+                          Provider.of<AuthService>(context, listen: false);
 
-                if (email.isEmpty || password.isEmpty) {
-                  _showErrorDialog('Please fill in all fields.');
-                  return;
-                }
+                      if (email.isEmpty || password.isEmpty) {
+                        _showDialog(
+                          'Error',
+                          'Please fill in all fields.',
+                          const Icon(Icons.error, color: Colors.red),
+                        );
+                        return;
+                      }
 
-                final success = await authService.login(email, password);
-                if (success) {
-                  Navigator.pushReplacementNamed(context, '/dashboard');
-                } else {
-                  _showErrorDialog(
-                      'Login failed. Please check your credentials.');
-                }
-              },
-              child: const Text('Login'),
-            ),
+                      setState(() {
+                        _isLoading = true;
+                      });
+
+                      final success = await authService.login(email, password);
+
+                      setState(() {
+                        _isLoading = false;
+                      });
+
+                      if (success) {
+                        _showDialog(
+                          'Success',
+                          'Login successful!',
+                          const Icon(Icons.check_circle, color: Colors.green),
+                          isSuccess: true,
+                        );
+                      } else {
+                        _showDialog(
+                          'Error',
+                          'Login failed. Please check your credentials.',
+                          const Icon(Icons.error, color: Colors.red),
+                        );
+                      }
+                    },
+                    child: const Text('Login'),
+                  ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: () {
