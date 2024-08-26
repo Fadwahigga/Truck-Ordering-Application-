@@ -20,7 +20,7 @@ class Order {
 }
 
 class OrderService extends ChangeNotifier {
-  final String baseUrl = 'http://truck-ordering.infinityfreeapp.com/api';
+  final String baseUrl = 'http://roita.org/api';
   final AuthService _authService;
 
   OrderService(this._authService);
